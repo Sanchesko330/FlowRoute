@@ -17,6 +17,7 @@ object WhitelistPreset {
     )
 
     private val packages = setOf(
+        "ru.rostel", "ru.gosuslugi.auto", "ru.gosuslugi.goskey",
         "ru.gosuslugi", "ru.gov.gosuslugi", "com.gosuslugi.android", "ru.nalog.fns",
         "com.vkontakte.android", "com.vk.im", "com.vk.calls", "com.vk.video", "com.vk.vkvideo",
         "ru.ok.android", "ru.mail.mailapp", "ru.mail.my", "ru.max", "ru.max.messenger", "ru.dzen",
@@ -37,4 +38,8 @@ object WhitelistPreset {
 
     fun installedMatches(installedApps: List<Pair<String, String>>): Set<String> =
         installedApps.filter { it.first in packages }.mapTo(mutableSetOf()) { it.first }
+
+    fun essentialDirectMatches(installedPackages: Collection<String>): Set<String> = installedPackages.filterTo(mutableSetOf()) {
+        it == "ru.rostel" || it == "ru.gosuslugi.auto" || it == "ru.gosuslugi.goskey"
+    }
 }

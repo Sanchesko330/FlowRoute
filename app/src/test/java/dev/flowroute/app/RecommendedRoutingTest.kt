@@ -25,10 +25,20 @@ class RecommendedRoutingTest {
         val settings = RecommendedRouting.settings(listOf(
             "org.telegram.messenger" to "Telegram",
             "com.vkontakte.android" to "VK",
+            "ru.rostel" to "Госуслуги",
+            "ru.gosuslugi.auto" to "Госуслуги Авто",
+            "ru.tele2.mytele2" to "Мой t2",
+            "ru.gosuslugi.goskey" to "Госключ",
         ))
         assertEquals(RegionRouteProfile.ALL_VPN, settings.qwdttRegionProfile)
         assertTrue(settings.qwdttAppFilterEnabled)
         assertEquals(AppFilterMode.EXCLUDE_SELECTED, settings.qwdttAppFilterMode)
-        assertEquals(setOf("com.vkontakte.android"), settings.qwdttSelectedApps)
+        assertEquals(setOf(
+            "com.vkontakte.android",
+            "ru.rostel",
+            "ru.gosuslugi.auto",
+            "ru.tele2.mytele2",
+            "ru.gosuslugi.goskey",
+        ), settings.qwdttSelectedApps)
     }
 }

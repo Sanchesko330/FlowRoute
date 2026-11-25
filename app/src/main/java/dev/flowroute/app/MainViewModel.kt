@@ -39,7 +39,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val update = mutableUpdate.asStateFlow()
 
     init {
-        if (store.isFirstLaunch) applyRecommendedRouting(notify = false)
+        if (store.isFirstLaunch) applyRecommendedRouting(notify = false) else addEssentialDirectApps()
         checkUpdates(manual = false)
         viewModelScope.launch {
             while (true) {
@@ -303,6 +303,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             qwdttSelectedApps = recommended.qwdttSelectedApps,
         ) }
         if (notify) mutableMessage.value = "Маршрутизация настроена"
+    }
+
+    private fun addEssentialDirectApps() {
+        val context = getApplication<Application>()
+        val preferences = context.getSharedPreferences("routing_migrations", Application.MODE_PRIVATE)
+        if (preferences.getInt("essential_direct_apps", 0) >= 1) return
+        val installed = context.packageManager.getInstalledApplications(0).map { it.packageName }
+        val additions = WhitelistPreset.essentialDirectMatches(installed)
+        if (additions.isNotEmpty()) updateSettings {
+            it.copy(qwdttSelectedApps = it.qwdttSelectedApps + additions)
+        }
+        preferences.edit().putInt("essential_direct_apps", 1).apply()
     }
 
     fun preloadRegionalData() {
