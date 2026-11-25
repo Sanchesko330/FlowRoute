@@ -1,6 +1,7 @@
 package dev.flowroute.app
 
 import android.app.Application
+import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import dev.flowroute.app.core.FlowRouteVpnService
@@ -448,7 +449,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun diagnosticText(): String {
         val current = store.state.value
         return buildString {
-            appendLine("FlowRoute 1.3.8 · ${SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())}")
+            appendLine("FlowRoute ${BuildConfig.VERSION_NAME} · ${SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())}")
             appendLine("VPN: ${FlowRouteVpnService.status.value}; стратегия: ${current.settings.strategy.title}")
             appendLine("Sticky session (приложение): ${current.settings.stickySessions}; failover: ${current.settings.autoFailover}")
             current.servers.forEach { appendLine("${it.name}: enabled=${it.enabled}, alive=${it.available}, latency=${it.latencyMs}, failures=${it.failedChecks}") }
@@ -463,6 +464,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             FlowRouteVpnService.clearDnsCache(getApplication())
             mutableMessage.value = "DNS-кэш очищается, маршруты перезапускаются"
         } else mutableMessage.value = "DNS-кэш очищен"
+    }
+
+    fun exportConfiguration(uri: Uri) = launchTask("Резервная копия сохранена") {
+        val resolver = getApplication<Application>().contentResolver
+        resolver.openOutputStream(uri, "wt")?.bufferedWriter()?.use { it.write(store.exportConfiguration()) }
+            ?: error("Не удалось открыть файл для сохранения")
+    }
+
+    fun importConfiguration(uri: Uri) = launchTask("Настройки восстановлены") {
+        val resolver = getApplication<Application>().contentResolver
+        val raw = resolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() }
+            ?: error("Не удалось открыть резервную копию")
+        FlowRouteVpnService.stop(getApplication())
+        store.importConfiguration(raw)
     }
 
     fun consumeMessage() { mutableMessage.value = null }

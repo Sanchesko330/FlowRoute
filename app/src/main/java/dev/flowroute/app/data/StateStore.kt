@@ -36,9 +36,20 @@ class StateStore(context: Context) {
 
     fun clearErrors() = update { it.copy(errorLogs = emptyList()) }
 
+    fun exportConfiguration(): String = ConfigurationBackupCodec.encode(mutableState.value)
+
+    fun importConfiguration(raw: String) {
+        val imported = normalize(ConfigurationBackupCodec.decode(raw))
+        update { imported }
+    }
+
     private fun load(): AppState {
         val raw = preferences.getString(KEY_STATE, null) ?: return AppState()
         val saved = runCatching { json.decodeFromString(AppState.serializer(), raw) }.getOrElse { AppState() }
+        return normalize(saved)
+    }
+
+    private fun normalize(saved: AppState): AppState {
         val migratedGroups = saved.groups.ifEmpty {
             saved.subscriptions.map { ServerGroup(it.id, it.name, it.updatedAt) }
         }

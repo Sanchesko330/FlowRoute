@@ -46,6 +46,12 @@ class MainActivity : ComponentActivity() {
     private val vpnPermission = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if (it.resultCode == RESULT_OK) FlowRouteVpnService.start(this)
     }
+    private val exportConfiguration = registerForActivityResult(ActivityResultContracts.CreateDocument("application/json")) {
+        it?.let(viewModel::exportConfiguration)
+    }
+    private val importConfiguration = registerForActivityResult(ActivityResultContracts.OpenDocument()) {
+        it?.let(viewModel::importConfiguration)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,6 +75,8 @@ class MainActivity : ComponentActivity() {
                                 ?: FlowRouteVpnService.start(context)
                         }
                     },
+                    onExportConfiguration = { exportConfiguration.launch("FlowRoute-backup.json") },
+                    onImportConfiguration = { importConfiguration.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) },
                 )
             }
         }
@@ -99,6 +107,8 @@ fun FlowRouteAppContent(
     traffic: Map<String, TrafficCounter>,
     viewModel: MainViewModel,
     onToggleVpn: () -> Unit,
+    onExportConfiguration: () -> Unit,
+    onImportConfiguration: () -> Unit,
 ) {
     var tab by remember { mutableIntStateOf(0) }
     val snackbar = remember { SnackbarHostState() }
@@ -147,7 +157,7 @@ fun FlowRouteAppContent(
             label = "screen",
         ) { page ->
             when (page) {
-                0 -> HomeScreen(state, status, traffic, viewModel, onToggleVpn)
+                0 -> HomeScreen(state, status, traffic, viewModel, onToggleVpn, onExportConfiguration, onImportConfiguration)
                 1 -> GroupsScreen(state, viewModel)
                 2 -> RoutesScreen(state, viewModel)
                 3 -> AppsScreen(state, viewModel)
@@ -165,6 +175,8 @@ private fun HomeScreen(
     traffic: Map<String, TrafficCounter>,
     viewModel: MainViewModel,
     onToggleVpn: () -> Unit,
+    onExportConfiguration: () -> Unit,
+    onImportConfiguration: () -> Unit,
 ) {
     val active = state.activeServers().count { it.enabled }
     val activeGroup = state.activeGroup()
@@ -278,6 +290,17 @@ private fun HomeScreen(
                         Icon(Icons.Rounded.Terminal, null); Spacer(Modifier.width(8.dp)); Text("Установить сервер QWDTT")
                     }
                     Text("Применится при следующем подключении", color = SecondaryText, style = MaterialTheme.typography.labelSmall)
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+                    Text("Резервная копия", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        OutlinedButton(onClick = onExportConfiguration, modifier = Modifier.weight(1f)) {
+                            Icon(Icons.Rounded.Upload, null); Spacer(Modifier.width(6.dp)); Text("Экспорт")
+                        }
+                        OutlinedButton(onClick = onImportConfiguration, modifier = Modifier.weight(1f)) {
+                            Icon(Icons.Rounded.Download, null); Spacer(Modifier.width(6.dp)); Text("Импорт")
+                        }
+                    }
+                    Text("Файл содержит серверы, подписки, пароли QWDTT и настройки. Храните его в защищённом месте.", color = SecondaryText, style = MaterialTheme.typography.labelSmall)
                     HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
                     OutlinedButton(onClick = { viewModel.checkUpdates() }, modifier = Modifier.fillMaxWidth()) {
                         Icon(Icons.Rounded.SystemUpdate, null); Spacer(Modifier.width(8.dp)); Text("Проверить обновления")
