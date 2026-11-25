@@ -1,0 +1,3 @@
+-keep class libXray.** { *; }
+-keep class go.** { *; }
+-dontwarn libXray.**

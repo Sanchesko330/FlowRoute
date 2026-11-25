@@ -1,0 +1,11 @@
+{
+  "project": "https://github.com/XTLS/libXray",
+  "release": "v26.11.9",
+  "asset": "libxray-android.zip",
+  "download": "https://github.com/XTLS/libXray/releases/download/v26.11.9/libxray-android.zip",
+  "sha256": "1b1aa12124a7112af983a6cea74c77f27aadc6b650acf3c5a57019619ba9fa48",
+  "xrayCore": "v26.11.9",
+  "wrapperLicense": "MIT",
+  "coreLicense": "MPL-2.0",
+  "coreSource": "https://github.com/XTLS/Xray-core/tree/v26.11.9"
+}
