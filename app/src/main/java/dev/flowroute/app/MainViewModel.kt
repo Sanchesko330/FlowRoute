@@ -39,6 +39,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val update = mutableUpdate.asStateFlow()
 
     init {
+        if (store.isFirstLaunch) applyRecommendedRouting(notify = false)
         checkUpdates(manual = false)
         viewModelScope.launch {
             while (true) {
@@ -285,6 +286,24 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun updateSettings(transform: (AppSettings) -> AppSettings) = store.update { it.copy(settings = transform(it.settings)) }
+
+    fun applyRecommendedRouting(notify: Boolean = true) {
+        val context = getApplication<Application>()
+        val installed = context.packageManager.getInstalledApplications(0)
+            .map { it.packageName to it.loadLabel(context.packageManager).toString() }
+        val recommended = RecommendedRouting.settings(installed)
+        updateSettings { current -> current.copy(
+            regionProfile = recommended.regionProfile,
+            appFilterEnabled = recommended.appFilterEnabled,
+            appFilterMode = recommended.appFilterMode,
+            selectedApps = recommended.selectedApps,
+            qwdttRegionProfile = recommended.qwdttRegionProfile,
+            qwdttAppFilterEnabled = recommended.qwdttAppFilterEnabled,
+            qwdttAppFilterMode = recommended.qwdttAppFilterMode,
+            qwdttSelectedApps = recommended.qwdttSelectedApps,
+        ) }
+        if (notify) mutableMessage.value = "Маршрутизация настроена"
+    }
 
     fun preloadRegionalData() {
         val context = getApplication<Application>()

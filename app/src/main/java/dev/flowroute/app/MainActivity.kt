@@ -354,6 +354,16 @@ private fun RoutesScreen(state: AppState, viewModel: MainViewModel) {
     LaunchedEffect(Unit) { viewModel.preloadRegionalData() }
     LazyColumn(contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item { BrandHeader("Маршрутизация") }
+        item {
+            Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = Panel)) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Button(onClick = { viewModel.applyRecommendedRouting() }, modifier = Modifier.fillMaxWidth()) {
+                        Icon(Icons.Rounded.Tune, null); Spacer(Modifier.width(8.dp)); Text("Настроить автоматически")
+                    }
+                    Text("VLESS: заблокированные приложения и ресурсы. QWDTT: всё, кроме приложений из белого списка.", color = SecondaryText, style = MaterialTheme.typography.bodySmall)
+                }
+            }
+        }
         item { Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             RoutingChannel.entries.forEach { item -> FilterChip(selected = channel == item, onClick = { channel = item },
                 label = { Text(item.title) }, modifier = Modifier.weight(1f)) }

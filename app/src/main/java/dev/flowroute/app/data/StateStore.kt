@@ -9,6 +9,7 @@ import kotlinx.serialization.json.Json
 class StateStore(context: Context) {
     private val preferences = context.getSharedPreferences("flowroute_state", Context.MODE_PRIVATE)
     private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
+    val isFirstLaunch = !preferences.contains(KEY_STATE)
     private val mutableState = MutableStateFlow(load())
     val state: StateFlow<AppState> = mutableState.asStateFlow()
 
