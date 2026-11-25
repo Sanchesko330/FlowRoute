@@ -24,6 +24,8 @@ object BlockedApps {
         // Соцсети и мессенджеры.
         "com.instagram.android", "com.facebook.katana", "com.facebook.orca",
         "com.twitter.android", "com.discord", "org.thoughtcrime.securesms",
+        "org.telegram.messenger", "org.telegram.messenger.web", "org.thunderdog.challegram",
+        "nekox.messenger", "tw.nekomimi.nekogram", "org.telegram.plus", "com.exteragram.messenger",
         "com.reddit.frontpage", "com.linkedin.android", "com.snapchat.android",
         "com.viber.voip", "com.pinterest", "com.patreon.android",
 

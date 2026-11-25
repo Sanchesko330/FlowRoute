@@ -47,7 +47,8 @@ object ConfigBuilder {
             when (routeProfile) {
                 RegionRouteProfile.BLOCKED_VPN -> {
                     add(rule(outbound = if (fallback) QWDDT_TAG else null,
-                        balancer = if (fallback) null else BALANCER_TAG, domains = listOf("ext:geosite-ru-only.dat:ru-blocked")))
+                        balancer = if (fallback) null else BALANCER_TAG,
+                        domains = listOf("ext:geosite-ru-only.dat:ru-blocked") + TELEGRAM_DOMAINS))
                     add(rule(outbound = if (fallback) QWDDT_TAG else null,
                         balancer = if (fallback) null else BALANCER_TAG,
                         ip = listOf("ext:geoip-ru-only.dat:ru-blocked", "ext:geoip-ru-only.dat:re-filter")))
@@ -149,6 +150,10 @@ object ConfigBuilder {
     private const val GROUP_BALANCER_PREFIX = "flow-group-"
     private val PRIVATE_NETWORKS = listOf("0.0.0.0/8", "10.0.0.0/8", "100.64.0.0/10", "127.0.0.0/8",
         "169.254.0.0/16", "172.16.0.0/12", "192.168.0.0/16", "::1/128", "fc00::/7", "fe80::/10")
+    private val TELEGRAM_DOMAINS = listOf(
+        "domain:telegram.org", "domain:telegram.me", "domain:t.me", "domain:tdesktop.com",
+        "domain:telesco.pe", "domain:telegram.dog", "domain:cdn-telegram.org",
+    )
     private val RUSSIAN_DOMAINS = listOf(
         "domain:ru", "domain:рф", "domain:su", "domain:yandex.com", "domain:yandex.net", "domain:yastatic.net",
         "domain:vk.com", "domain:vk.ru", "domain:vkuseraudio.net", "domain:vkvideo.ru", "domain:mail.ru",

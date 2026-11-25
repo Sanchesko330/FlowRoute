@@ -34,4 +34,38 @@ class FailoverPolicyTest {
         assertEquals(-1, FailoverPolicy.normalizePingDelay(-1))
         assertEquals(250, FailoverPolicy.normalizePingDelay(250))
     }
+
+    @Test
+    fun healthChangesDoNotRestartCoreOrDropApplicationSessions() {
+        val server = dev.flowroute.app.data.ServerNode(
+            id = "a", groupId = "g", name = "A", host = "a.example.com", port = 443,
+            outbound = JsonObject(emptyMap()),
+        )
+        val state = dev.flowroute.app.data.AppState(
+            groups = listOf(dev.flowroute.app.data.ServerGroup("g", "Test")),
+            selectedGroupId = "g", servers = listOf(server),
+        )
+        val initial = FailoverPolicy.coreRouteKey(state)
+        val afterHealthChecks = state.copy(servers = listOf(server.copy(
+            available = false, latencyMs = -1, failedChecks = 2, checkedAt = 123456L,
+        )))
+        assertEquals(initial, FailoverPolicy.coreRouteKey(afterHealthChecks))
+        assertEquals(initial, FailoverPolicy.coreRouteKey(state.copy(servers = listOf(server.copy(
+            available = true, latencyMs = 120, failedChecks = 0, checkedAt = 223456L,
+        )))))
+    }
+
+    @Test
+    fun enablingOrDisablingServerStillUpdatesCore() {
+        val server = dev.flowroute.app.data.ServerNode(
+            id = "a", groupId = "g", name = "A", host = "a.example.com", port = 443,
+            outbound = JsonObject(emptyMap()),
+        )
+        val state = dev.flowroute.app.data.AppState(
+            groups = listOf(dev.flowroute.app.data.ServerGroup("g", "Test")),
+            selectedGroupId = "g", servers = listOf(server),
+        )
+        val initial = FailoverPolicy.coreRouteKey(state)
+        assertEquals(false, initial == FailoverPolicy.coreRouteKey(state.copy(servers = listOf(server.copy(enabled = false)))))
+    }
 }

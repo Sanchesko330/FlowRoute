@@ -125,13 +125,7 @@ class FlowRouteVpnService : VpnService() {
     private suspend fun watchFailover() {
         (application as FlowRouteApp).store.state
             .drop(1)
-            .map { state ->
-                val enabled = state.activeServers().filter { it.enabled }
-                val group = state.activeGroup()
-                listOf(group?.id.orEmpty(), group?.qwdttOnly.toString(), group?.useQwdttFallback.toString(), state.settings.toString()) +
-                    state.routes.filter { it.enabled }.map { "${it.id}:${it.action}:${it.values}:${it.serverId}:${it.groupId}" } +
-                    enabled.filter { !state.settings.autoFailover || it.available != false }.ifEmpty { enabled }.map { it.id }.sorted()
-            }
+            .map(FailoverPolicy::coreRouteKey)
             .distinctUntilChanged()
             .collect {
                 val state = (application as FlowRouteApp).store.state.value

@@ -15,6 +15,7 @@ class BlockedAppsTest {
             "com.openai.chatgpt" to "ChatGPT",
             "com.spotify.music" to "Spotify",
             "com.google.android.apps.youtube.music" to "YouTube Music",
+            "org.telegram.messenger" to "Telegram",
             "com.vkontakte.android" to "VK",
             "ru.sberbankmobile" to "Сбер",
         )
@@ -23,6 +24,7 @@ class BlockedAppsTest {
             setOf(
                 "com.android.chrome", "com.google.android.youtube", "com.instagram.android",
                 "com.openai.chatgpt", "com.spotify.music", "com.google.android.apps.youtube.music",
+                "org.telegram.messenger",
             ),
             BlockedApps.installedMatches(installed),
         )

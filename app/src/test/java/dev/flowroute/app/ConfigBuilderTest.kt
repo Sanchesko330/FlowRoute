@@ -113,6 +113,7 @@ class ConfigBuilderTest {
         val config = ConfigBuilder.build(state, 1, assetPath = "/data/geodata")
         val rules = config.getValue("routing").jsonObject.getValue("rules").jsonArray.map { it.jsonObject }
         assertTrue(rules.any { it["domain"]?.jsonArray?.contains(JsonPrimitive("ext:geosite-ru-only.dat:ru-blocked")) == true })
+        assertTrue(rules.any { it["domain"]?.jsonArray?.contains(JsonPrimitive("domain:t.me")) == true })
         assertEquals("direct", rules.last().getValue("outboundTag").jsonPrimitive.content)
         assertEquals("/data/geodata", config.getValue("env").jsonObject.getValue("xray.location.asset").jsonPrimitive.content)
     }
