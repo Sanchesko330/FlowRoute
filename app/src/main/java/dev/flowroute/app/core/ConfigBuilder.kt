@@ -48,7 +48,7 @@ object ConfigBuilder {
                 RegionRouteProfile.BLOCKED_VPN -> {
                     add(rule(outbound = if (fallback) QWDDT_TAG else null,
                         balancer = if (fallback) null else BALANCER_TAG,
-                        domains = listOf("ext:geosite-ru-only.dat:ru-blocked") + TELEGRAM_DOMAINS))
+                        domains = listOf("ext:geosite-ru-only.dat:ru-blocked") + TELEGRAM_DOMAINS + YOUTUBE_DOMAINS))
                     add(rule(outbound = if (fallback) QWDDT_TAG else null,
                         balancer = if (fallback) null else BALANCER_TAG,
                         ip = listOf("ext:geoip-ru-only.dat:ru-blocked", "ext:geoip-ru-only.dat:re-filter")))
@@ -79,7 +79,10 @@ object ConfigBuilder {
         val qwdttOutbound = if (qwdttPort == null) emptyList() else listOf(buildJsonObject {
             put("tag", QWDDT_TAG); put("protocol", "socks")
             put("settings", buildJsonObject { put("servers", buildJsonArray {
-                add(buildJsonObject { put("address", "127.0.0.1"); put("port", qwdttPort) })
+                add(buildJsonObject {
+                    put("address", "127.0.0.1"); put("port", qwdttPort)
+                    put("udp", true)
+                })
             }) })
         })
         return buildJsonObject {
@@ -153,6 +156,10 @@ object ConfigBuilder {
     private val TELEGRAM_DOMAINS = listOf(
         "domain:telegram.org", "domain:telegram.me", "domain:t.me", "domain:tdesktop.com",
         "domain:telesco.pe", "domain:telegram.dog", "domain:cdn-telegram.org",
+    )
+    private val YOUTUBE_DOMAINS = listOf(
+        "domain:youtube.com", "domain:youtu.be", "domain:googlevideo.com",
+        "domain:ytimg.com", "domain:ggpht.com", "domain:youtube-nocookie.com",
     )
     private val RUSSIAN_DOMAINS = listOf(
         "domain:ru", "domain:рф", "domain:su", "domain:yandex.com", "domain:yandex.net", "domain:yastatic.net",

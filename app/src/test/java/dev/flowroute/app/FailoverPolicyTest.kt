@@ -29,6 +29,15 @@ class FailoverPolicyTest {
     }
 
     @Test
+    fun firstFailureSchedulesRetryWithoutFiveMinuteDelay() {
+        val server = dev.flowroute.app.data.ServerNode(
+            id = "a", groupId = "g", name = "A", host = "a.example.com", port = 443,
+            outbound = JsonObject(emptyMap()), failedChecks = 1,
+        )
+        assertEquals(30_000L, FailoverPolicy.checkInterval(listOf(server)))
+    }
+
+    @Test
     fun xrayTimeoutIsFailureRatherThanSuccessfulPing() {
         assertEquals(-1, FailoverPolicy.normalizePingDelay(10_000))
         assertEquals(-1, FailoverPolicy.normalizePingDelay(-1))

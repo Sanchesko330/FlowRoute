@@ -140,7 +140,9 @@ class ConfigBuilderTest {
         val config = ConfigBuilder.build(testState(servers = listOf(server("a"))), 1, qwdttPort = 49500)
         val outbounds = config.getValue("outbounds").jsonArray.map { it.jsonObject }
         val qwdtt = outbounds.single { it["tag"]?.jsonPrimitive?.content == ConfigBuilder.QWDDT_TAG }
-        assertEquals(49500, qwdtt.getValue("settings").jsonObject.getValue("servers").jsonArray.single().jsonObject.getValue("port").jsonPrimitive.int)
+        val socksServer = qwdtt.getValue("settings").jsonObject.getValue("servers").jsonArray.single().jsonObject
+        assertEquals(49500, socksServer.getValue("port").jsonPrimitive.int)
+        assertTrue(socksServer.getValue("udp").jsonPrimitive.boolean)
         val rules = config.getValue("routing").jsonObject.getValue("rules").jsonArray.map { it.jsonObject }
         assertEquals(ConfigBuilder.QWDDT_TAG, rules.last().getValue("outboundTag").jsonPrimitive.content)
         assertTrue(rules.any { it["outboundTag"]?.jsonPrimitive?.content == "proxy-a" && it["inboundTag"] != null })
@@ -156,9 +158,11 @@ class ConfigBuilderTest {
         assertEquals("direct", rules.single {
             it["domain"]?.jsonArray?.contains(JsonPrimitive("domain:example.com")) == true
         }.getValue("outboundTag").jsonPrimitive.content)
-        assertEquals(ConfigBuilder.QWDDT_TAG, rules.single {
+        val blocked = rules.single {
             it["domain"]?.jsonArray?.contains(JsonPrimitive("ext:geosite-ru-only.dat:ru-blocked")) == true
-        }.getValue("outboundTag").jsonPrimitive.content)
+        }
+        assertEquals(ConfigBuilder.QWDDT_TAG, blocked.getValue("outboundTag").jsonPrimitive.content)
+        assertTrue(blocked.getValue("domain").jsonArray.contains(JsonPrimitive("domain:googlevideo.com")))
         assertEquals("direct", rules.last().getValue("outboundTag").jsonPrimitive.content)
     }
 
