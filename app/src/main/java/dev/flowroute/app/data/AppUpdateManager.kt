@@ -31,6 +31,7 @@ data class AppUpdateUiState(
     val stage: UpdateStage = UpdateStage.IDLE,
     val release: AppRelease? = null,
     val error: String = "",
+    val progress: DownloadProgress = DownloadProgress(),
 )
 
 @Serializable
@@ -64,14 +65,32 @@ class AppUpdateManager(private val context: Context) {
         AppRelease(version, release.body, apk.downloadUrl, release.pageUrl)
     }
 
-    suspend fun download(release: AppRelease): File = withContext(Dispatchers.IO) {
+    suspend fun download(
+        release: AppRelease,
+        preferredProxy: java.net.Proxy? = null,
+        onProgress: (DownloadProgress) -> Unit = {},
+    ): File = withContext(Dispatchers.IO) {
         val directory = File(context.cacheDir, "updates").apply { mkdirs() }
         directory.listFiles()?.forEach { it.delete() }
         val target = File(directory, "FlowRoute-${release.version}.apk")
         val partial = File(directory, "download.part")
-        open(release.downloadUrl).inputStream.use { input ->
-            partial.outputStream().buffered().use { output -> input.copyTo(output) }
+        val attempts = listOfNotNull(
+            preferredProxy?.let { it to "через VPN" },
+            null to "напрямую",
+        )
+        var networkError: java.io.IOException? = null
+        for ((proxy, transport) in attempts) {
+            try {
+                partial.delete()
+                ApkHttpDownloader.download(release.downloadUrl, partial, proxy, transport, onProgress)
+                networkError = null
+                break
+            } catch (error: java.io.IOException) {
+                networkError = error
+                partial.delete()
+            }
         }
+        networkError?.let { throw java.io.IOException("Не удалось скачать APK ни через VPN, ни напрямую: ${it.message}", it) }
         val info = context.packageManager.getPackageArchiveInfo(partial.absolutePath, 0)
             ?: error("Загружен повреждённый APK")
         require(info.packageName == context.packageName) { "APK принадлежит другому приложению" }

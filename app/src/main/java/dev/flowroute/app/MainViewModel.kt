@@ -86,7 +86,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         mutableUpdate.value = mutableUpdate.value.copy(stage = UpdateStage.DOWNLOADING, error = "")
         viewModelScope.launch {
             try {
-                val apk = updateManager.download(release)
+                val proxy = when {
+                    QwdttEngine.activeSocksPort != null -> ApkHttpDownloader.localSocks(QwdttEngine.activeSocksPort!!)
+                    FlowRouteVpnService.status.value == VpnStatus.CONNECTED ->
+                        ApkHttpDownloader.localHttp(dev.flowroute.app.core.ConfigBuilder.PROBE_PORT_BASE)
+                    else -> null
+                }
+                val apk = updateManager.download(release, proxy) { progress ->
+                    mutableUpdate.value = mutableUpdate.value.copy(progress = progress)
+                }
                 pendingApk = apk
                 mutableUpdate.value = mutableUpdate.value.copy(stage = UpdateStage.READY)
                 updateManager.install(apk)

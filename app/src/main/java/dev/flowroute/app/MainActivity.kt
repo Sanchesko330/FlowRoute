@@ -332,7 +332,16 @@ private fun UpdateDialog(state: AppUpdateUiState, onInstall: () -> Unit, onDismi
             Column(Modifier.heightIn(max = 360.dp).verticalScroll(androidx.compose.foundation.rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(if (state.stage == UpdateStage.READY) "APK загружен. Подтвердите установку в системном окне." else "Доступна новая версия. Текущая: ${BuildConfig.VERSION_NAME}")
                 if (release.notes.isNotBlank()) Text(release.notes, color = SecondaryText, style = MaterialTheme.typography.bodySmall)
-                if (state.stage == UpdateStage.DOWNLOADING) LinearProgressIndicator(Modifier.fillMaxWidth())
+                if (state.stage == UpdateStage.DOWNLOADING) {
+                    val progress = state.progress
+                    val fraction = progress.fraction
+                    if (fraction == null) LinearProgressIndicator(Modifier.fillMaxWidth())
+                    else LinearProgressIndicator(progress = { fraction }, modifier = Modifier.fillMaxWidth())
+                    val downloaded = String.format(java.util.Locale.getDefault(), "%.1f", progress.downloadedBytes / 1_048_576.0)
+                    val total = if (progress.totalBytes > 0) String.format(java.util.Locale.getDefault(), " / %.1f", progress.totalBytes / 1_048_576.0) else ""
+                    val percent = fraction?.let { " · ${(it * 100).toInt()}%" }.orEmpty()
+                    Text("Загрузка ${progress.transport}: $downloaded$total МБ$percent", style = MaterialTheme.typography.bodySmall)
+                }
                 if (state.error.isNotBlank()) Text(state.error, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
             }
         },

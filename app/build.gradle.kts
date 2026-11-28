@@ -23,8 +23,8 @@ android {
         applicationId = "dev.flowroute.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 38
-        versionName = "1.5.4"
+        versionCode = 39
+        versionName = "1.5.5"
         buildConfigField("String", "GITHUB_REPOSITORY", "\"Sanchesko330/FlowRoute\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
